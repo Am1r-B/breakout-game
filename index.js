@@ -1,14 +1,18 @@
 const grid = document.querySelector(".grid");
 const blockWidth = 100;
 const blockHeight = 20;
+const ballDiameter = 20;
 const boardWidth = 560;
+const boardHeight = 300;
 let timerIntervalId;
+let xSpeed = 2;
+let ySpeed = 2;
 
 const userStart = { x: 230, y: 10 };
 let currentPosition = userStart;
 
 const ballStart = {
-  x: userStart.x + blockWidth / 2 - 10,
+  x: userStart.x + (blockWidth - ballDiameter) / 2,
   y: userStart.y + blockHeight,
 };
 let ballCurrentPosition = ballStart;
@@ -93,16 +97,51 @@ function moveUser(e) {
 document.addEventListener("keydown", moveUser);
 
 // Add ball
-const ball = document.createElement("dvi");
+const ball = document.createElement("div");
 ball.classList.add("ball");
 drawBall();
 grid.appendChild(ball);
 
 // Move ball
 function moveBall() {
-  ballCurrentPosition.x += 2;
-  ballCurrentPosition.y += 2;
+  ballCurrentPosition.x += xSpeed;
+  ballCurrentPosition.y += ySpeed;
   drawBall();
+  checkForCollisions();
 }
 
 timerIntervalId = setInterval(moveBall, 30);
+
+// Check for collisions
+function checkForCollisions() {
+  // Check for wall collisions
+  if (
+    // Check collision between right side of ball and right wall
+    ballCurrentPosition.x + ballDiameter >= boardWidth ||
+    // Check collision between topside of ball and ceiling
+    ballCurrentPosition.y + ballDiameter >= boardHeight ||
+    // Check collision between left side of ball and left wall
+    ballCurrentPosition.x <= 0
+  ) {
+    changeSpeed();
+  }
+}
+
+function changeSpeed() {
+  if (xSpeed === 2 && ySpeed === 2) {
+    ySpeed = -2;
+    return;
+  }
+  if (xSpeed === 2 && ySpeed === -2) {
+    xSpeed = -2;
+    return;
+  }
+  if (xSpeed === -2 && ySpeed === -2) {
+    ySpeed = 2;
+    return;
+  }
+  if (xSpeed === -2 && ySpeed === 2) {
+    xSpeed = 2;
+    return;
+  }
+}

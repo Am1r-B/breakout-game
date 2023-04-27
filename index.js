@@ -2,23 +2,24 @@ const grid = document.querySelector(".grid");
 const blockWidth = 100;
 const blockHeight = 20;
 const boardWidth = 560;
+let timerIntervalId;
 
-const userStart = [230, 10];
+const userStart = { x: 230, y: 10 };
 let currentPosition = userStart;
 
-const ballStart = [
-  userStart[0] + blockWidth / 2 - 10,
-  userStart[1] + blockHeight,
-];
+const ballStart = {
+  x: userStart.x + blockWidth / 2 - 10,
+  y: userStart.y + blockHeight,
+};
 let ballCurrentPosition = ballStart;
 
 // Create Block
 class Block {
   constructor(xAxis, yAxis) {
-    this.bottomLeft = [xAxis, yAxis];
-    this.bottomRight = [xAxis + blockWidth, yAxis];
-    this.topLeft = [xAxis, yAxis + blockHeight];
-    this.topRight = [xAxis + blockWidth, yAxis + blockHeight];
+    this.bottomLeft = { x: xAxis, y: yAxis };
+    this.bottomRight = { x: xAxis + blockWidth, y: yAxis };
+    this.topLeft = { x: xAxis, y: yAxis + blockHeight };
+    this.topRight = { x: xAxis + blockWidth, y: yAxis + blockHeight };
   }
 }
 
@@ -46,8 +47,8 @@ function addBlocks() {
   for (let i = 0; i < blocks.length; i++) {
     const block = document.createElement("div");
     block.classList.add("block");
-    block.style.left = blocks[i].bottomLeft[0] + "px";
-    block.style.bottom = blocks[i].bottomLeft[1] + "px";
+    block.style.left = blocks[i].bottomLeft.x + "px";
+    block.style.bottom = blocks[i].bottomLeft.y + "px";
     grid.appendChild(block);
   }
 }
@@ -61,28 +62,28 @@ grid.appendChild(user);
 
 // Draw the user
 function drawUser() {
-  user.style.left = currentPosition[0] + "px";
-  user.style.bottom = currentPosition[1] + "px";
+  user.style.left = currentPosition.x + "px";
+  user.style.bottom = currentPosition.y + "px";
 }
 
 // Draw the ball
 function drawBall() {
-  ball.style.left = ballCurrentPosition[0] + "px";
-  ball.style.bottom = ballCurrentPosition[1] + "px";
+  ball.style.left = ballCurrentPosition.x + "px";
+  ball.style.bottom = ballCurrentPosition.y + "px";
 }
 
 // Move user
 function moveUser(e) {
   switch (e.key) {
     case "ArrowLeft":
-      if (currentPosition[0] > 0) {
-        currentPosition[0] -= 10;
+      if (currentPosition.x > 0) {
+        currentPosition.x -= 10;
         drawUser();
       }
       break;
     case "ArrowRight":
-      if (currentPosition[0] + blockWidth < boardWidth) {
-        currentPosition[0] += 10;
+      if (currentPosition.x + blockWidth < boardWidth) {
+        currentPosition.x += 10;
         drawUser();
       }
       break;
@@ -96,3 +97,12 @@ const ball = document.createElement("dvi");
 ball.classList.add("ball");
 drawBall();
 grid.appendChild(ball);
+
+// Move ball
+function moveBall() {
+  ballCurrentPosition.x += 2;
+  ballCurrentPosition.y += 2;
+  drawBall();
+}
+
+timerIntervalId = setInterval(moveBall, 30);

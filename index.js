@@ -1,31 +1,41 @@
 const grid = document.querySelector(".grid");
 const scoreDisplay = document.querySelector("#score");
-const blockWidth = 100;
-const blockHeight = 20;
-const ballDiameter = 20;
-const boardWidth = 560;
-const boardHeight = 300;
-let timerIntervalId;
-let xSpeed = 2;
-let ySpeed = 2;
-let score = 0;
+
+const board = {
+  width: 560,
+  height: 300,
+};
+
+const block = {
+  width: 100,
+  height: 20,
+};
 
 const userStart = { x: 230, y: 10 };
-let currentPosition = userStart;
-
-const ballStart = {
-  x: userStart.x + (blockWidth - ballDiameter) / 2,
-  y: userStart.y + blockHeight,
+const user = {
+  position: userStart,
 };
-let ballCurrentPosition = ballStart;
+
+const ball = {
+  diameter: 20,
+  speed: {
+    x: 2,
+    y: 2,
+  },
+};
+const ballStart = {
+  x: userStart.x + (block.width - ball.diameter) / 2,
+  y: userStart.y + block.height,
+};
+ball.position = ballStart;
+
+let timerIntervalId;
+let score = 0;
 
 // Create Block
 class Block {
   constructor(xAxis, yAxis) {
-    this.bottomLeft = { x: xAxis, y: yAxis };
-    this.bottomRight = { x: xAxis + blockWidth, y: yAxis };
-    this.topLeft = { x: xAxis, y: yAxis + blockHeight };
-    this.topRight = { x: xAxis + blockWidth, y: yAxis + blockHeight };
+    this.position = { x: xAxis, y: yAxis };
   }
 }
 
@@ -51,63 +61,63 @@ const blocks = [
 // Draw all my block
 function addBlocks() {
   for (let i = 0; i < blocks.length; i++) {
-    const block = document.createElement("div");
-    block.classList.add("block");
-    block.style.left = blocks[i].bottomLeft.x + "px";
-    block.style.bottom = blocks[i].bottomLeft.y + "px";
-    grid.appendChild(block);
+    const newBlock = document.createElement("div");
+    newBlock.classList.add("block");
+    newBlock.style.left = blocks[i].position.x + "px";
+    newBlock.style.bottom = blocks[i].position.y + "px";
+    blocks[i].element = newBlock;
+    grid.appendChild(newBlock);
   }
 }
 addBlocks();
 
 // Add user
-const user = document.createElement("div");
-user.classList.add("user");
+const userDisplay = document.createElement("div");
+userDisplay.classList.add("user");
 drawUser();
-grid.appendChild(user);
+grid.appendChild(userDisplay);
 
 // Draw the user
 function drawUser() {
-  user.style.left = currentPosition.x + "px";
-  user.style.bottom = currentPosition.y + "px";
+  userDisplay.style.left = user.position.x + "px";
+  userDisplay.style.bottom = user.position.y + "px";
 }
 
 // Draw the ball
 function drawBall() {
-  ball.style.left = ballCurrentPosition.x + "px";
-  ball.style.bottom = ballCurrentPosition.y + "px";
+  ballDisplay.style.left = ball.position.x + "px";
+  ballDisplay.style.bottom = ball.position.y + "px";
 }
 
 // Move user
 function moveUser(e) {
   switch (e.key) {
     case "ArrowLeft":
-      if (currentPosition.x > 0) {
-        currentPosition.x -= 10;
+      if (user.position.x > 0) {
+        user.position.x -= 10;
         drawUser();
       }
       break;
     case "ArrowRight":
-      if (currentPosition.x + blockWidth < boardWidth) {
-        currentPosition.x += 10;
+      if (user.position.x + block.width < board.width) {
+        user.position.x += 10;
         drawUser();
       }
-      break;
   }
 }
 
 document.addEventListener("keydown", moveUser);
 
 // Add ball
-const ball = document.createElement("div");
-ball.classList.add("ball");
+const ballDisplay = document.createElement("div");
+ballDisplay.classList.add("ball");
 drawBall();
-grid.appendChild(ball);
+grid.appendChild(ballDisplay);
 
 // Move ball
 function moveBall() {
-  ballCurrentPosition.x += xSpeed;
-  ballCurrentPosition.y += ySpeed;
+  ball.position.x += ball.speed.x;
+  ball.position.y += ball.speed.y;
   drawBall();
   checkForCollisions();
 }
@@ -119,13 +129,12 @@ function checkForCollisions() {
   // Check for block collisions
   for (let i = 0; i < blocks.length; i++) {
     if (
-      ballCurrentPosition.x > blocks[i].bottomLeft.x &&
-      ballCurrentPosition.x < blocks[i].bottomRight.x &&
-      ballCurrentPosition.y + ballDiameter > blocks[i].bottomLeft.y &&
-      ballCurrentPosition.y < blocks[i].topLeft.y
+      ball.position.x < blocks[i].position.x + block.width &&
+      ball.position.x + ball.diameter > blocks[i].position.x &&
+      ball.position.y < blocks[i].position.y + block.height &&
+      ball.position.y + ball.diameter > blocks[i].position.y
     ) {
-      const allBlocks = Array.from(document.querySelectorAll(".block"));
-      allBlocks[i].classList.remove("block");
+      blocks[i].element.classList.remove("block");
       blocks.splice(i, 1);
       changeDirection();
       score++;
@@ -143,54 +152,37 @@ function checkForCollisions() {
   // Check for wall collisions
   if (
     // Check collision between right side of ball and right wall
-    ballCurrentPosition.x + ballDiameter >= boardWidth ||
+    ball.position.x + ball.diameter >= board.width ||
     // Check collision between topside of ball and ceiling
-    ballCurrentPosition.y + ballDiameter >= boardHeight ||
+    ball.position.y + ball.diameter >= board.height ||
     // Check collision between left side of ball and left wall
-    ballCurrentPosition.x <= 0
+    ball.position.x <= 0
   ) {
     changeDirection();
   }
 
   // Check for user collisions
   if (
-    ballCurrentPosition.x > currentPosition.x &&
-    ballCurrentPosition.x < currentPosition.x + blockWidth &&
-    ballCurrentPosition.y > currentPosition.y &&
-    ballCurrentPosition.y < currentPosition.y + blockHeight
+    ball.position.x < user.position.x + block.width &&
+    ball.position.x + ball.diameter > user.position.x &&
+    ball.position.y < user.position.y + block.height &&
+    ball.position.y + ball.diameter > user.position.y
   ) {
-    changeDirection();
+    ball.speed.y = Math.abs(ball.speed.y);
   }
 
   // Check for game over
-  if (ballCurrentPosition.y <= 0) {
+  if (ball.position.y <= 0) {
     clearInterval(timerIntervalId);
-    score.innerHTML = "You lose";
+    scoreDisplay.innerHTML = "You lose";
     document.removeEventListener("keydown", moveUser);
   }
 }
 
 function changeDirection() {
-  if (xSpeed * ySpeed >= 0) {
-    ySpeed = -ySpeed;
+  if (ball.speed.x * ball.speed.y >= 0) {
+    ball.speed.y = -ball.speed.y;
   } else {
-    xSpeed = -xSpeed;
+    ball.speed.x = -ball.speed.x;
   }
-
-  // if (xSpeed === 2 && ySpeed === 2) {
-  //   ySpeed = -2;
-  //   return;
-  // }
-  // if (xSpeed === 2 && ySpeed === -2) {
-  //   xSpeed = -2;
-  //   return;
-  // }
-  // if (xSpeed === -2 && ySpeed === -2) {
-  //   ySpeed = 2;
-  //   return;
-  // }
-  // if (xSpeed === -2 && ySpeed === 2) {
-  //   xSpeed = 2;
-  //   return;
-  // }
 }

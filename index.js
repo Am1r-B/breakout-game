@@ -130,6 +130,13 @@ function checkForCollisions() {
       changeDirection();
       score++;
       scoreDisplay.innerHTML = score;
+
+      // Check for win
+      if (blocks.length <= 0) {
+        scoreDisplay.innerHTML = "YOU WIN";
+        clearInterval(timerIntervalId);
+        document.removeEventListener("keydown", moveUser);
+      }
     }
   }
 

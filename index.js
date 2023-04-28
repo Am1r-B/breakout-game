@@ -145,6 +145,16 @@ function checkForCollisions() {
     changeDirection();
   }
 
+  // Check for user collisions
+  if (
+    ballCurrentPosition.x > currentPosition.x &&
+    ballCurrentPosition.x < currentPosition.x + blockWidth &&
+    ballCurrentPosition.y > currentPosition.y &&
+    ballCurrentPosition.y < currentPosition.y + blockHeight
+  ) {
+    changeDirection();
+  }
+
   // Check for game over
   if (ballCurrentPosition.y <= 0) {
     clearInterval(timerIntervalId);

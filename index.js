@@ -1,5 +1,5 @@
 const grid = document.querySelector(".grid");
-const score = document.querySelector("#score");
+const scoreDisplay = document.querySelector("#score");
 const blockWidth = 100;
 const blockHeight = 20;
 const ballDiameter = 20;
@@ -8,6 +8,7 @@ const boardHeight = 300;
 let timerIntervalId;
 let xSpeed = 2;
 let ySpeed = 2;
+let score = 0;
 
 const userStart = { x: 230, y: 10 };
 let currentPosition = userStart;
@@ -115,6 +116,23 @@ timerIntervalId = setInterval(moveBall, 30);
 
 // Check for collisions
 function checkForCollisions() {
+  // Check for block collisions
+  for (let i = 0; i < blocks.length; i++) {
+    if (
+      ballCurrentPosition.x > blocks[i].bottomLeft.x &&
+      ballCurrentPosition.x < blocks[i].bottomRight.x &&
+      ballCurrentPosition.y + ballDiameter > blocks[i].bottomLeft.y &&
+      ballCurrentPosition.y < blocks[i].topLeft.y
+    ) {
+      const allBlocks = Array.from(document.querySelectorAll(".block"));
+      allBlocks[i].classList.remove("block");
+      blocks.splice(i, 1);
+      changeDirection();
+      score++;
+      scoreDisplay.innerHTML = score;
+    }
+  }
+
   // Check for wall collisions
   if (
     // Check collision between right side of ball and right wall
@@ -124,7 +142,7 @@ function checkForCollisions() {
     // Check collision between left side of ball and left wall
     ballCurrentPosition.x <= 0
   ) {
-    changeSpeed();
+    changeDirection();
   }
 
   // Check for game over
@@ -135,21 +153,27 @@ function checkForCollisions() {
   }
 }
 
-function changeSpeed() {
-  if (xSpeed === 2 && ySpeed === 2) {
-    ySpeed = -2;
-    return;
+function changeDirection() {
+  if (xSpeed * ySpeed >= 0) {
+    ySpeed = -ySpeed;
+  } else {
+    xSpeed = -xSpeed;
   }
-  if (xSpeed === 2 && ySpeed === -2) {
-    xSpeed = -2;
-    return;
-  }
-  if (xSpeed === -2 && ySpeed === -2) {
-    ySpeed = 2;
-    return;
-  }
-  if (xSpeed === -2 && ySpeed === 2) {
-    xSpeed = 2;
-    return;
-  }
+
+  // if (xSpeed === 2 && ySpeed === 2) {
+  //   ySpeed = -2;
+  //   return;
+  // }
+  // if (xSpeed === 2 && ySpeed === -2) {
+  //   xSpeed = -2;
+  //   return;
+  // }
+  // if (xSpeed === -2 && ySpeed === -2) {
+  //   ySpeed = 2;
+  //   return;
+  // }
+  // if (xSpeed === -2 && ySpeed === 2) {
+  //   xSpeed = 2;
+  //   return;
+  // }
 }
